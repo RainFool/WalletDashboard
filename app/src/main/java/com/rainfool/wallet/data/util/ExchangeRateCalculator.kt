@@ -3,6 +3,7 @@ package com.rainfool.wallet.data.util
 import com.rainfool.wallet.data.model.ExchangeRate
 import com.rainfool.wallet.data.model.WalletBalance
 import com.rainfool.wallet.data.model.WalletConstants
+import com.rainfool.wallet.data.model.WalletConstants.CurrencyConfig
 
 /**
  * 汇率计算工具类
@@ -63,14 +64,14 @@ object ExchangeRateCalculator {
     fun formatUsdValue(usdValue: Double): String {
         return WalletConstants.formatUsdValue(usdValue)
     }
-    
+
     /**
      * 检查是否支持该货币的汇率计算
      * @param currency 货币代码
      * @return 是否支持
      */
     fun isSupportedCurrency(currency: String): Boolean {
-        return WalletConstants.isSupportedCurrency(currency)
+        return currency in CurrencyConfig.SUPPORTED_CURRENCIES
     }
 
 }

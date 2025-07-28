@@ -70,28 +70,15 @@ object WalletConstants {
         val formatPattern: String,
         val displayPriority: Int
     )
-    
-    /**
-     * Get currency info by symbol
-     */
-    private fun getCurrencyInfo(currency: String): CurrencyInfo {
-        return CurrencyConfig.CURRENCIES[currency] ?: CurrencyConfig.DEFAULT_CURRENCY
-    }
-    
+
     /**
      * Get format pattern for currency
      */
     private fun getFormatPattern(currency: String): String {
-        return getCurrencyInfo(currency).formatPattern
+        val currencyInfo = CurrencyConfig.CURRENCIES[currency] ?: CurrencyConfig.DEFAULT_CURRENCY
+        return currencyInfo.formatPattern
     }
-    
-    /**
-     * Check if currency is supported
-     */
-    fun isSupportedCurrency(currency: String): Boolean {
-        return currency in CurrencyConfig.SUPPORTED_CURRENCIES
-    }
-    
+
     /**
      * Format currency value with proper decimal places
      */
