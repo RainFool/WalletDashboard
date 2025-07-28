@@ -4,10 +4,6 @@ package com.rainfool.wallet.data.model
  * Data model related constants
  */
 object WalletConstants {
-    /**
-     * Supported currencies list
-     */
-    val SUPPORTED_CURRENCIES = listOf("BTC", "ETH", "CRO")
     
     /**
      * Target currency (USD)
@@ -15,41 +11,99 @@ object WalletConstants {
     const val TARGET_CURRENCY = "USD"
     
     /**
-     * Default decimal places
+     * Currency configuration object
+     * 统一管理所有货币的配置信息
      */
-    const val DEFAULT_DECIMAL_PLACES = 2
+    object CurrencyConfig {
+        /**
+         * Supported currencies list
+         */
+        val SUPPORTED_CURRENCIES = listOf("BTC", "ETH", "CRO")
+        
+        /**
+         * Currency configurations
+         */
+        val CURRENCIES = mapOf(
+            "BTC" to CurrencyInfo(
+                symbol = "BTC",
+                decimalPlaces = 8,
+                formatPattern = "%.8f",
+                displayPriority = 1
+            ),
+            "ETH" to CurrencyInfo(
+                symbol = "ETH", 
+                decimalPlaces = 6,
+                formatPattern = "%.6f",
+                displayPriority = 2
+            ),
+            "CRO" to CurrencyInfo(
+                symbol = "CRO",
+                decimalPlaces = 2,
+                formatPattern = "%.2f", 
+                displayPriority = 3
+            ),
+            "USD" to CurrencyInfo(
+                symbol = "USD",
+                decimalPlaces = 2,
+                formatPattern = "$%.2f",
+                displayPriority = 999
+            )
+        )
+        
+        /**
+         * Default currency configuration
+         */
+        val DEFAULT_CURRENCY = CurrencyInfo(
+            symbol = "UNKNOWN",
+            decimalPlaces = 2,
+            formatPattern = "%.2f",
+            displayPriority = 999
+        )
+    }
     
     /**
-     * BTC decimal places
+     * Currency information data class
      */
-    const val BTC_DECIMAL_PLACES = 8
+    data class CurrencyInfo(
+        val symbol: String,
+        val decimalPlaces: Int,
+        val formatPattern: String,
+        val displayPriority: Int
+    )
     
     /**
-     * ETH decimal places
+     * Get currency info by symbol
      */
-    const val ETH_DECIMAL_PLACES = 6
+    private fun getCurrencyInfo(currency: String): CurrencyInfo {
+        return CurrencyConfig.CURRENCIES[currency] ?: CurrencyConfig.DEFAULT_CURRENCY
+    }
     
     /**
-     * CRO decimal places
+     * Get format pattern for currency
      */
-    const val CRO_DECIMAL_PLACES = 2
-    
-    /**
-     * Get decimal places for currency
-     */
-    fun getDecimalPlaces(currency: String): Int {
-        return when (currency) {
-            "BTC" -> BTC_DECIMAL_PLACES
-            "ETH" -> ETH_DECIMAL_PLACES
-            "CRO" -> CRO_DECIMAL_PLACES
-            else -> DEFAULT_DECIMAL_PLACES
-        }
+    private fun getFormatPattern(currency: String): String {
+        return getCurrencyInfo(currency).formatPattern
     }
     
     /**
      * Check if currency is supported
      */
     fun isSupportedCurrency(currency: String): Boolean {
-        return currency in SUPPORTED_CURRENCIES
+        return currency in CurrencyConfig.SUPPORTED_CURRENCIES
+    }
+    
+    /**
+     * Format currency value with proper decimal places
+     */
+    fun formatCurrencyValue(value: Double, currency: String): String {
+        val format = getFormatPattern(currency)
+        return format.format(value)
+    }
+    
+    /**
+     * Format USD value with currency symbol
+     */
+    fun formatUsdValue(value: Double): String {
+        return getFormatPattern("USD").format(value)
     }
 } 

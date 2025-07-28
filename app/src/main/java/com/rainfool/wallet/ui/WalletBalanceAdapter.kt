@@ -14,6 +14,7 @@ import com.rainfool.wallet.data.model.WalletBalance
 import com.rainfool.wallet.data.model.ExchangeRate
 import com.rainfool.wallet.data.model.Currency
 import com.rainfool.wallet.data.model.WalletConstants
+import com.rainfool.wallet.data.util.ExchangeRateCalculator
 
 class WalletBalanceAdapter : RecyclerView.Adapter<WalletBalanceAdapter.BalanceViewHolder>() {
     
@@ -48,9 +49,8 @@ class WalletBalanceAdapter : RecyclerView.Adapter<WalletBalanceAdapter.BalanceVi
         
         fun bind(balance: WalletBalance) {
             tvCurrency.text = balance.currency
-            // Use decimal places defined in Constants to display amount
-            val decimalPlaces = WalletConstants.getDecimalPlaces(balance.currency)
-            tvAmount.text = String.format("%.${decimalPlaces}f %s", balance.amount, balance.currency)
+            // Use unified formatting method
+            tvAmount.text = "${WalletConstants.formatCurrencyValue(balance.amount, balance.currency)} ${balance.currency}"
             
             // Find corresponding currency information
             val currency = currencies.find { it.symbol == balance.currency }
@@ -68,15 +68,9 @@ class WalletBalanceAdapter : RecyclerView.Adapter<WalletBalanceAdapter.BalanceVi
                 ivCurrencyIcon.setImageResource(R.drawable.currency_icon_background)
             }
             
-            // Calculate USD value
-            val rate = exchangeRates.find { it.fromCurrency == balance.currency && it.toCurrency == "USD" }
-            if (rate != null && rate.rates.isNotEmpty()) {
-                val usdRate = rate.rates.first().rate.toDoubleOrNull() ?: 0.0
-                val usdValue = balance.amount * usdRate
-                tvUsdValue.text = "$${String.format("%.2f", usdValue)}"
-            } else {
-                tvUsdValue.text = "$0.00"
-            }
+            // Calculate USD value using utility class
+            val usdValue = ExchangeRateCalculator.calculateUsdValue(balance, exchangeRates)
+            tvUsdValue.text = ExchangeRateCalculator.formatUsdValue(usdValue)
         }
     }
 } 

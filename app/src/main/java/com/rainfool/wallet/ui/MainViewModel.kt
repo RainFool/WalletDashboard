@@ -7,6 +7,7 @@ import com.rainfool.wallet.data.model.ExchangeRate
 import com.rainfool.wallet.data.model.Currency
 import com.rainfool.wallet.data.repository.WalletRepository
 import com.rainfool.wallet.di.DependencyProvider
+import com.rainfool.wallet.data.util.ExchangeRateCalculator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -166,8 +167,8 @@ class MainViewModel : ViewModel() {
                     val rates = ratesResult.getOrNull() ?: emptyList()
                     val ratesError = ratesResult.exceptionOrNull()
 
-                    // Calculate total USD value
-                    val totalUsdValue = calculateTotalUsdValue(balances, rates)
+                    // Calculate total USD value using utility class
+                    val totalUsdValue = ExchangeRateCalculator.calculateTotalUsdValue(balances, rates)
 
                     // Update UI state
                     val currentState = _uiState.value
@@ -180,7 +181,7 @@ class MainViewModel : ViewModel() {
                             balanceError != null -> "Failed to load wallet data: ${balanceError.message}"
                             ratesError != null -> "Failed to load exchange rates: ${ratesError.message}"
                             balances.isNotEmpty() && rates.isNotEmpty() ->
-                                "Data updated, total value: $${String.format("%.2f", totalUsdValue)}"
+                                "Data updated, total value: ${ExchangeRateCalculator.formatUsdValue(totalUsdValue)}"
 
                             else -> "Waiting for data..."
                         }
@@ -217,26 +218,7 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Calculate total USD value by converting all wallet balances to USD
-     * @param balances List of wallet balances in different currencies
-     * @param rates List of exchange rates for currency conversion
-     * @return Total value in USD
-     */
-    private fun calculateTotalUsdValue(balances: List<WalletBalance>, rates: List<ExchangeRate>): Double {
-        var totalUsdValue = 0.0
 
-        balances.forEach { balance ->
-            val rate = rates.find { it.fromCurrency == balance.currency && it.toCurrency == "USD" }
-            if (rate != null && rate.rates.isNotEmpty()) {
-                val usdRate = rate.rates.first().rate.toDoubleOrNull() ?: 0.0
-                val usdValue = balance.amount * usdRate
-                totalUsdValue += usdValue
-            }
-        }
-
-        return totalUsdValue
-    }
 
     override fun onCleared() {
         super.onCleared()

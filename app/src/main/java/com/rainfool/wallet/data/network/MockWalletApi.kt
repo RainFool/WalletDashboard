@@ -4,6 +4,7 @@ import com.rainfool.wallet.data.model.Currency
 import com.rainfool.wallet.data.model.ExchangeRate
 import com.rainfool.wallet.data.model.Rate
 import com.rainfool.wallet.data.model.WalletBalance
+import com.rainfool.wallet.data.model.WalletConstants
 import kotlinx.coroutines.delay
 import kotlin.random.Random
 
@@ -169,13 +170,8 @@ class MockWalletApi : WalletApi {
         val changePercent = (random.nextDouble() - 0.5) * 2 * rateChangeRange
         val newRate = baseRate * (1 + changePercent)
         
-        // Format exchange rate based on currency type
-        return when (currency) {
-            "BTC" -> "%.2f".format(newRate)
-            "ETH" -> "%.2f".format(newRate)
-            "CRO" -> "%.4f".format(newRate)
-            else -> "%.2f".format(newRate)
-        }
+        // Format exchange rate based on currency type using unified constants
+        return WalletConstants.formatCurrencyValue(newRate, currency)
     }
     
     override suspend fun getWalletBalance(): WalletBalanceResponse {

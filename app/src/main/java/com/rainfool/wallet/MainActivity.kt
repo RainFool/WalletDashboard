@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.rainfool.wallet.data.model.WalletConstants
 import com.rainfool.wallet.ui.MainViewModel
 import com.rainfool.wallet.ui.MainUiState
 import com.rainfool.wallet.ui.WalletBalanceAdapter
@@ -73,8 +74,8 @@ class MainActivity : AppCompatActivity() {
         } else {
             progressBar.visibility = View.GONE
             
-            // Update total value
-            tvTotalValue.text = "$${String.format("%.2f", uiState.totalUsdValue)}"
+            // Update total value using unified formatting
+            tvTotalValue.text = WalletConstants.formatUsdValue(uiState.totalUsdValue)
             
             // Update balance list
             balanceAdapter.updateData(uiState.walletBalances, uiState.exchangeRates, uiState.currencies)
