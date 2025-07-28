@@ -3,8 +3,8 @@ package com.rainfool.wallet.data.model
 import com.google.gson.annotations.SerializedName
 
 /**
- * 货币数据模型
- * 对应currencies-json.md中的货币信息
+ * Currency data model
+ * Corresponds to currency information in currencies-json.md
  */
 data class Currency(
     @SerializedName("coin_id")

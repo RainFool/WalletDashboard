@@ -56,18 +56,18 @@ class MainActivity : AppCompatActivity() {
     private fun updateUI(uiState: MainUiState) {
         if (uiState.isLoading) {
             progressBar.visibility = View.VISIBLE
-            tvMessage.text = "正在加载..."
+            tvMessage.text = "Loading..."
             tvMessage.visibility = View.VISIBLE
         } else {
             progressBar.visibility = View.GONE
             
-            // 更新总价值
+            // Update total value
             tvTotalValue.text = "$${String.format("%.2f", uiState.totalUsdValue)}"
             
-            // 更新余额列表
+            // Update balance list
             balanceAdapter.updateData(uiState.walletBalances, uiState.exchangeRates, uiState.currencies)
             
-            // 更新消息
+            // Update message
             tvMessage.text = uiState.message
             tvMessage.visibility = View.VISIBLE
         }

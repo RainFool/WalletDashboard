@@ -1,30 +1,30 @@
 package com.rainfool.wallet.data.model
 
 /**
- * 数据模型扩展函数
+ * Data model extension functions
  */
 
-// ==================== Currency 扩展方法 ====================
+// ==================== Currency Extension Methods ====================
 
 /**
- * 获取显示用的图标URL
+ * Get display icon URL
  */
 fun Currency.getDisplayImageUrl(): String = colorfulImageUrl
 
 /**
- * 获取货币的显示名称
+ * Get currency display name
  */
 fun Currency.getDisplayName(): String = "$name ($symbol)"
 
 /**
- * 检查是否为支持的货币（BTC、ETH、CRO）
+ * Check if currency is supported (BTC, ETH, CRO)
  */
 fun Currency.isSupportedCurrency(): Boolean {
     return symbol in listOf("BTC", "ETH", "CRO")
 }
 
 /**
- * 获取货币的显示优先级（用于排序）
+ * Get currency display priority (for sorting)
  */
 fun Currency.getDisplayPriority(): Int {
     return when (symbol) {
@@ -35,56 +35,56 @@ fun Currency.getDisplayPriority(): Int {
     }
 }
 
-// ==================== ExchangeRate 扩展方法 ====================
+// ==================== ExchangeRate Extension Methods ====================
 
 /**
- * 获取当前汇率（使用第一个rate）
+ * Get current exchange rate (using first rate)
  */
 fun ExchangeRate.getCurrentRate(): Double? {
     return rates.firstOrNull()?.rate?.toDoubleOrNull()
 }
 
 /**
- * 检查是否为USD汇率
+ * Check if it's USD exchange rate
  */
 fun ExchangeRate.isUsdRate(): Boolean {
     return toCurrency == "USD"
 }
 
 /**
- * 检查是否为支持的货币汇率
+ * Check if it's supported currency exchange rate
  */
 fun ExchangeRate.isSupportedCurrencyRate(): Boolean {
     return fromCurrency in listOf("BTC", "ETH", "CRO") && isUsdRate()
 }
 
-// ==================== Rate 扩展方法 ====================
+// ==================== Rate Extension Methods ====================
 
 /**
- * 获取汇率数值
+ * Get exchange rate value
  */
 fun Rate.getRateValue(): Double? {
     return rate.toDoubleOrNull()
 }
 
 /**
- * 获取数量数值
+ * Get amount value
  */
 fun Rate.getAmountValue(): Double? {
     return amount.toDoubleOrNull()
 }
 
-// ==================== WalletBalance 扩展方法 ====================
+// ==================== WalletBalance Extension Methods ====================
 
 /**
- * 检查是否为支持的货币余额
+ * Check if it's supported currency balance
  */
 fun WalletBalance.isSupportedCurrency(): Boolean {
     return currency in listOf("BTC", "ETH", "CRO")
 }
 
 /**
- * 获取格式化的余额显示
+ * Get formatted balance display
  */
 fun WalletBalance.getFormattedAmount(): String {
     return when (currency) {
@@ -96,42 +96,42 @@ fun WalletBalance.getFormattedAmount(): String {
 }
 
 /**
- * 获取货币符号
+ * Get currency symbol
  */
 fun WalletBalance.getCurrencySymbol(): String = currency
 
-// ==================== WalletDashboard 扩展方法 ====================
+// ==================== WalletDashboard Extension Methods ====================
 
 /**
- * 获取支持的货币列表（BTC、ETH、CRO）
+ * Get supported currencies list (BTC, ETH, CRO)
  */
 fun WalletDashboard.getSupportedCurrencies(): List<Currency> {
     return currencies.filter { it.isSupportedCurrency() }
 }
 
 /**
- * 获取支持的汇率列表
+ * Get supported exchange rates list
  */
 fun WalletDashboard.getSupportedExchangeRates(): List<ExchangeRate> {
     return exchangeRates.filter { it.isSupportedCurrencyRate() }
 }
 
 /**
- * 获取支持的钱包余额列表
+ * Get supported wallet balances list
  */
 fun WalletDashboard.getSupportedWalletBalances(): List<WalletBalance> {
     return walletBalances.filter { it.isSupportedCurrency() }
 }
 
 /**
- * 根据货币符号获取货币信息
+ * Get currency info by symbol
  */
 fun WalletDashboard.getCurrencyBySymbol(symbol: String): Currency? {
     return currencies.find { it.symbol == symbol }
 }
 
 /**
- * 根据货币符号获取汇率
+ * Get exchange rate by currency symbol
  */
 fun WalletDashboard.getExchangeRateByCurrency(currency: String): ExchangeRate? {
     return exchangeRates.find { 
@@ -140,14 +140,14 @@ fun WalletDashboard.getExchangeRateByCurrency(currency: String): ExchangeRate? {
 }
 
 /**
- * 根据货币符号获取钱包余额
+ * Get wallet balance by currency symbol
  */
 fun WalletDashboard.getWalletBalanceByCurrency(currency: String): WalletBalance? {
     return walletBalances.find { it.currency == currency }
 }
 
 /**
- * 计算指定货币的USD价值
+ * Calculate USD value for specified currency
  */
 fun WalletDashboard.calculateUsdValue(currency: String): Double {
     val balance = getWalletBalanceByCurrency(currency)
@@ -163,7 +163,7 @@ fun WalletDashboard.calculateUsdValue(currency: String): Double {
 }
 
 /**
- * 计算总USD余额
+ * Calculate total USD balance
  */
 fun WalletDashboard.calculateTotalUsdBalance(): Double {
     return getSupportedWalletBalances().sumOf { balance ->
@@ -172,14 +172,14 @@ fun WalletDashboard.calculateTotalUsdBalance(): Double {
 }
 
 /**
- * 获取格式化的总USD余额
+ * Get formatted total USD balance
  */
 fun WalletDashboard.getFormattedTotalUsdBalance(): String {
     return "$%.2f".format(calculateTotalUsdBalance())
 }
 
 /**
- * 检查数据是否完整
+ * Check if data is complete
  */
 fun WalletDashboard.isDataComplete(): Boolean {
     val supportedCurrencies = getSupportedCurrencies()
@@ -192,14 +192,14 @@ fun WalletDashboard.isDataComplete(): Boolean {
 }
 
 /**
- * 检查WalletDashboard是否包含有效数据
+ * Check if WalletDashboard contains valid data
  */
 fun WalletDashboard.hasValidData(): Boolean {
     return isDataComplete() && calculateTotalUsdBalance() > 0
 }
 
 /**
- * 将WalletDashboard转换为UI项列表
+ * Convert WalletDashboard to UI item list
  */
 fun WalletDashboard.toCurrencyUiItems(): List<CurrencyUiItem> {
     return getSupportedCurrencies().map { currency ->
@@ -216,47 +216,47 @@ fun WalletDashboard.toCurrencyUiItems(): List<CurrencyUiItem> {
     }
 }
 
-// ==================== CurrencyUiItem 扩展方法 ====================
+// ==================== CurrencyUiItem Extension Methods ====================
 
 /**
- * 获取格式化的USD价值
+ * Get formatted USD value
  */
 fun CurrencyUiItem.getFormattedUsdValue(): String {
     return "$%.2f".format(usdValue)
 }
 
 /**
- * 获取货币图标URL
+ * Get currency icon URL
  */
 fun CurrencyUiItem.getCurrencyIconUrl(): String {
     return currency.getDisplayImageUrl()
 }
 
 /**
- * 获取货币显示名称
+ * Get currency display name
  */
 fun CurrencyUiItem.getCurrencyDisplayName(): String {
     return currency.getDisplayName()
 }
 
 /**
- * 获取余额显示
+ * Get balance display
  */
 fun CurrencyUiItem.getBalanceDisplay(): String {
     return balance?.getFormattedAmount() ?: "0.00"
 }
 
 /**
- * 检查是否有有效数据
+ * Check if has valid data
  */
 fun CurrencyUiItem.hasValidData(): Boolean {
     return balance != null && exchangeRate != null
 }
 
-// ==================== 通用扩展方法 ====================
+// ==================== General Extension Methods ====================
 
 /**
- * 格式化数字为货币显示格式
+ * Format number as currency display format
  */
 fun Double.formatAsCurrency(currency: String): String {
     return when (currency) {
@@ -269,14 +269,14 @@ fun Double.formatAsCurrency(currency: String): String {
 }
 
 /**
- * 安全地解析字符串为Double
+ * Safely parse string to Double
  */
 fun String.toDoubleOrZero(): Double {
     return this.toDoubleOrNull() ?: 0.0
 }
 
 /**
- * 检查字符串是否为有效的数字
+ * Check if string is valid number
  */
 fun String.isValidNumber(): Boolean {
     return this.toDoubleOrNull() != null

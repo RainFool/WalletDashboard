@@ -8,26 +8,26 @@ import kotlinx.coroutines.delay
 import kotlin.random.Random
 
 /**
- * 模拟钱包API实现
- * 延迟1秒后返回模拟数据，用于开发和测试
+ * Mock wallet API implementation
+ * Returns mock data after 1 second delay, used for development and testing
  */
 class MockWalletApi : WalletApi {
     
-    // 基础汇率数据
+    // Base exchange rate data
     private val baseRates = mapOf(
         "BTC" to 45000.0,
         "ETH" to 3200.0,
         "CRO" to 0.08
     )
     
-    // 汇率变化范围（百分比）
-    private val rateChangeRange = 0.05 // 5%的变化范围
+    // Exchange rate change range (percentage)
+    private val rateChangeRange = 0.05 // 5% change range
     
-    // 失败概率（10%）
+    // Failure probability (10%)
     private val failureRate = 0.1
     
     override suspend fun getCurrencies(): CurrenciesResponse {
-        delay(1000) // 模拟网络延迟1秒
+        delay(1000) // Simulate network delay of 1 second
         
         return CurrenciesResponse(
             currencies = listOf(
@@ -110,14 +110,14 @@ class MockWalletApi : WalletApi {
     }
     
     override suspend fun getLiveRates(): LiveRatesResponse {
-        delay(1000) // 模拟网络延迟1秒
+        delay(1000) // Simulate network delay of 1 second
         
-        // 随机失败检查
+        // Random failure check
         if (Random.nextDouble() < failureRate) {
-            throw RuntimeException("网络请求失败，请稍后重试")
+            throw RuntimeException("Network request failed, please try again later")
         }
         
-        // 生成随机变化的汇率
+        // Generate randomly changing exchange rates
         val currentTime = System.currentTimeMillis()
         
         return LiveRatesResponse(
@@ -153,23 +153,23 @@ class MockWalletApi : WalletApi {
     }
     
     /**
-     * 生成随机变化的汇率
-     * @param currency 货币代码
-     * @param timestamp 时间戳，用于确保每秒变化
-     * @return 格式化后的汇率字符串
+     * Generate randomly changing exchange rate
+     * @param currency Currency code
+     * @param timestamp Timestamp, used to ensure changes every second
+     * @return Formatted exchange rate string
      */
     private fun generateRandomRate(currency: String, timestamp: Long): String {
         val baseRate = baseRates[currency] ?: return "0.0"
         
-        // 使用时间戳确保每秒变化
-        val seed = timestamp / 1000 // 每秒一个种子
+        // Use timestamp to ensure changes every second
+        val seed = timestamp / 1000 // One seed per second
         val random = Random(seed)
         
-        // 生成-5%到+5%的随机变化
+        // Generate random change from -5% to +5%
         val changePercent = (random.nextDouble() - 0.5) * 2 * rateChangeRange
         val newRate = baseRate * (1 + changePercent)
         
-        // 根据货币类型格式化汇率
+        // Format exchange rate based on currency type
         return when (currency) {
             "BTC" -> "%.2f".format(newRate)
             "ETH" -> "%.2f".format(newRate)
@@ -179,7 +179,7 @@ class MockWalletApi : WalletApi {
     }
     
     override suspend fun getWalletBalance(): WalletBalanceResponse {
-        delay(1000) // 模拟网络延迟1秒
+        delay(1000) // Simulate network delay of 1 second
         
         return WalletBalanceResponse(
             ok = true,

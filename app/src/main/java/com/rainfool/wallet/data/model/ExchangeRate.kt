@@ -3,8 +3,8 @@ package com.rainfool.wallet.data.model
 import com.google.gson.annotations.SerializedName
 
 /**
- * 汇率数据模型
- * 对应live-rates-json.md中的汇率信息
+ * Exchange rate data model
+ * Corresponds to exchange rate information in live-rates-json.md
  */
 data class ExchangeRate(
     @SerializedName("from_currency")
@@ -21,7 +21,7 @@ data class ExchangeRate(
 )
 
 /**
- * 汇率详情数据模型
+ * Exchange rate detail data model
  */
 data class Rate(
     @SerializedName("amount")

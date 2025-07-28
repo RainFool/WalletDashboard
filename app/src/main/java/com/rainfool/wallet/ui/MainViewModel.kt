@@ -31,15 +31,15 @@ class MainViewModel : ViewModel() {
             try {
                 _uiState.value = _uiState.value.copy(isLoading = true)
                 
-                // 加载货币信息
+                // Load currency information
                 val currenciesResult = repository.getCurrencies()
                 currenciesResult.fold(
                     onSuccess = { currencies ->
-                        // 加载钱包数据
+                        // Load wallet data
                         repository.getWalletBalances().collect { balancesResult ->
                             balancesResult.fold(
                                 onSuccess = { balances ->
-                                    // 加载汇率数据
+                                    // Load exchange rate data
                                     repository.getExchangeRates().collect { ratesResult ->
                                         ratesResult.fold(
                                             onSuccess = { rates ->
@@ -50,7 +50,7 @@ class MainViewModel : ViewModel() {
                                                     walletBalances = balances,
                                                     exchangeRates = rates,
                                                     totalUsdValue = totalUsdValue,
-                                                    message = "钱包数据加载成功，总价值: $${String.format("%.2f", totalUsdValue)}"
+                                                    message = "Wallet data loaded successfully, total value: $${String.format("%.2f", totalUsdValue)}"
                                                 )
                                             },
                                             onFailure = { error ->
@@ -58,7 +58,7 @@ class MainViewModel : ViewModel() {
                                                     isLoading = false,
                                                     currencies = currencies,
                                                     walletBalances = balances,
-                                                    message = "汇率数据加载失败: ${error.message}"
+                                                    message = "Failed to load exchange rate data: ${error.message}"
                                                 )
                                             }
                                         )
@@ -68,7 +68,7 @@ class MainViewModel : ViewModel() {
                                     _uiState.value = _uiState.value.copy(
                                         isLoading = false,
                                         currencies = currencies,
-                                        message = "钱包数据加载失败: ${error.message}"
+                                        message = "Failed to load wallet data: ${error.message}"
                                     )
                                 }
                             )
@@ -77,29 +77,29 @@ class MainViewModel : ViewModel() {
                     onFailure = { error ->
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
-                            message = "货币信息加载失败: ${error.message}"
+                            message = "Failed to load currency information: ${error.message}"
                         )
                     }
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    message = "初始化失败: ${e.message}"
+                    message = "Initialization failed: ${e.message}"
                 )
             }
         }
     }
     
     /**
-     * 开始定时更新汇率
+     * Start periodic exchange rate updates
      */
     private fun startLiveRateUpdates() {
         viewModelScope.launch {
             while (isActive) {
                 try {
-                    delay(1000) // 每秒更新一次
+                    delay(1000) // Update every second
                     
-                    // 获取最新的汇率数据
+                    // Get latest exchange rate data
                     repository.getExchangeRates().collect { result ->
                         result.fold(
                             onSuccess = { rates ->
@@ -109,13 +109,13 @@ class MainViewModel : ViewModel() {
                                 _uiState.value = currentState.copy(
                                     exchangeRates = rates,
                                     totalUsdValue = totalUsdValue,
-                                    message = "汇率已更新，总价值: $${String.format("%.2f", totalUsdValue)}"
+                                    message = "Exchange rates updated, total value: $${String.format("%.2f", totalUsdValue)}"
                                 )
                             },
                             onFailure = { error ->
                                 val currentState = _uiState.value
                                 _uiState.value = currentState.copy(
-                                    message = "汇率更新失败: ${error.message}"
+                                    message = "Failed to update exchange rates: ${error.message}"
                                 )
                             }
                         )
@@ -123,7 +123,7 @@ class MainViewModel : ViewModel() {
                 } catch (e: Exception) {
                     val currentState = _uiState.value
                     _uiState.value = currentState.copy(
-                        message = "汇率更新异常: ${e.message}"
+                        message = "Exchange rate update exception: ${e.message}"
                     )
                 }
             }

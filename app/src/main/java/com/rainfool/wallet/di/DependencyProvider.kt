@@ -5,21 +5,21 @@ import com.rainfool.wallet.data.network.WalletApi
 import com.rainfool.wallet.data.repository.WalletRepository
 
 /**
- * 依赖注入提供者
- * 提供应用所需的所有依赖实例
+ * Dependency injection provider
+ * Provides all dependency instances required by the application
  */
 object DependencyProvider {
     
     /**
-     * 提供WalletApi实例
-     * 使用模拟实现，延迟1秒返回数据
+     * Provide WalletApi instance
+     * Uses mock implementation, returns data after 1 second delay
      */
     fun provideWalletApi(): WalletApi {
         return MockWalletApi()
     }
     
     /**
-     * 提供WalletRepository实例
+     * Provide WalletRepository instance
      */
     fun provideWalletRepository(): WalletRepository {
         return WalletRepository(provideWalletApi())

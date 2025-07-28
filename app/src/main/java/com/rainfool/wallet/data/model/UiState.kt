@@ -1,7 +1,7 @@
 package com.rainfool.wallet.data.model
 
 /**
- * 钱包UI状态
+ * Wallet UI state
  */
 sealed class WalletUiState {
     object Loading : WalletUiState()
@@ -11,7 +11,7 @@ sealed class WalletUiState {
 }
 
 /**
- * 货币项UI数据模型
+ * Currency item UI data model
  */
 data class CurrencyUiItem(
     val currency: Currency,

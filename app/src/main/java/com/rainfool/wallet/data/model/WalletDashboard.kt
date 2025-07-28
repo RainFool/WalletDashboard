@@ -1,8 +1,8 @@
 package com.rainfool.wallet.data.model
 
 /**
- * 钱包仪表板聚合数据模型
- * 包含货币信息、汇率和余额的完整数据
+ * Wallet dashboard aggregated data model
+ * Contains complete data including currency information, exchange rates and balances
  */
 data class WalletDashboard(
     val currencies: List<Currency>,

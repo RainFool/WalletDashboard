@@ -3,8 +3,8 @@ package com.rainfool.wallet.data.model
 import com.google.gson.annotations.SerializedName
 
 /**
- * 钱包余额数据模型
- * 对应wallet-balance-json.md中的余额信息
+ * Wallet balance data model
+ * Corresponds to balance information in wallet-balance-json.md
  */
 data class WalletBalance(
     @SerializedName("currency")

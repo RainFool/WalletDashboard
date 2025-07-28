@@ -48,27 +48,27 @@ class WalletBalanceAdapter : RecyclerView.Adapter<WalletBalanceAdapter.BalanceVi
         
         fun bind(balance: WalletBalance) {
             tvCurrency.text = balance.currency
-            // 使用Constants中定义的小数位数显示金额
+            // Use decimal places defined in Constants to display amount
             val decimalPlaces = WalletConstants.getDecimalPlaces(balance.currency)
             tvAmount.text = String.format("%.${decimalPlaces}f %s", balance.amount, balance.currency)
             
-            // 查找对应的货币信息
+            // Find corresponding currency information
             val currency = currencies.find { it.symbol == balance.currency }
             Log.d("WalletBalanceAdapter", "colorfulImageUrl: ${currency?.colorfulImageUrl}")
-            // 加载货币图标
+            // Load currency icon
             if (currency != null) {
-                // 使用彩色图片URL
+                // Use colorful image URL
                 Glide.with(itemView.context)
                     .load(currency.colorfulImageUrl)
                     .placeholder(R.drawable.currency_icon_background)
                     .error(R.drawable.currency_icon_background)
                     .into(ivCurrencyIcon)
             } else {
-                // 如果没有找到货币信息，使用默认图标
+                // If currency information not found, use default icon
                 ivCurrencyIcon.setImageResource(R.drawable.currency_icon_background)
             }
             
-            // 计算USD价值
+            // Calculate USD value
             val rate = exchangeRates.find { it.fromCurrency == balance.currency && it.toCurrency == "USD" }
             if (rate != null && rate.rates.isNotEmpty()) {
                 val usdRate = rate.rates.first().rate.toDoubleOrNull() ?: 0.0

@@ -8,16 +8,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 /**
- * 钱包数据仓库
- * 负责管理所有数据操作，包括网络请求和本地缓存
+ * Wallet data repository
+ * Manages all data operations, including network requests and local caching
  */
 class WalletRepository(
     private val walletApi: WalletApi
 ) {
     
     /**
-     * 获取货币列表
-     * 货币列表相对静态，只需要请求一次
+     * Get currency list
+     * Currency list is relatively static, only needs to be requested once
      */
     suspend fun getCurrencies(): Result<List<Currency>> {
         return try {
@@ -25,7 +25,7 @@ class WalletRepository(
             if (response.ok) {
                 Result.success(response.currencies)
             } else {
-                Result.failure(Exception("获取货币列表失败"))
+                Result.failure(Exception("Failed to get currency list"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -33,7 +33,7 @@ class WalletRepository(
     }
     
     /**
-     * 获取实时汇率
+     * Get real-time exchange rates
      */
     fun getExchangeRates(): Flow<Result<List<ExchangeRate>>> = flow {
         try {
@@ -41,7 +41,7 @@ class WalletRepository(
             if (response.ok) {
                 emit(Result.success(response.tiers))
             } else {
-                emit(Result.failure(Exception("获取汇率失败")))
+                emit(Result.failure(Exception("Failed to get exchange rates")))
             }
         } catch (e: Exception) {
             emit(Result.failure(e))
@@ -49,7 +49,7 @@ class WalletRepository(
     }
     
     /**
-     * 获取钱包余额
+     * Get wallet balances
      */
     fun getWalletBalances(): Flow<Result<List<WalletBalance>>> = flow {
         try {
@@ -57,7 +57,7 @@ class WalletRepository(
             if (response.ok) {
                 emit(Result.success(response.wallet))
             } else {
-                emit(Result.failure(Exception("获取钱包余额失败")))
+                emit(Result.failure(Exception("Failed to get wallet balances")))
             }
         } catch (e: Exception) {
             emit(Result.failure(e))

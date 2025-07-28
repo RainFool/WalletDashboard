@@ -6,7 +6,7 @@ import com.rainfool.wallet.data.model.ExchangeRate
 import com.rainfool.wallet.data.model.WalletBalance
 
 /**
- * 货币列表API响应
+ * Currency list API response
  */
 data class CurrenciesResponse(
     @SerializedName("currencies")
@@ -20,7 +20,7 @@ data class CurrenciesResponse(
 )
 
 /**
- * 汇率API响应
+ * Exchange rate API response
  */
 data class LiveRatesResponse(
     @SerializedName("ok")
@@ -34,7 +34,7 @@ data class LiveRatesResponse(
 )
 
 /**
- * 钱包余额API响应
+ * Wallet balance API response
  */
 data class WalletBalanceResponse(
     @SerializedName("ok")
@@ -48,7 +48,7 @@ data class WalletBalanceResponse(
 )
 
 /**
- * 通用API响应包装
+ * Generic API response wrapper
  */
 sealed class ApiResult<out T> {
     data class Success<T>(val data: T) : ApiResult<T>()

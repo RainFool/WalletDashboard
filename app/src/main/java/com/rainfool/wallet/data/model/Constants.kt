@@ -1,41 +1,41 @@
 package com.rainfool.wallet.data.model
 
 /**
- * 数据模型相关常量
+ * Data model related constants
  */
 object WalletConstants {
     /**
-     * 支持的货币列表
+     * Supported currencies list
      */
     val SUPPORTED_CURRENCIES = listOf("BTC", "ETH", "CRO")
     
     /**
-     * 目标货币（USD）
+     * Target currency (USD)
      */
     const val TARGET_CURRENCY = "USD"
     
     /**
-     * 默认小数位数
+     * Default decimal places
      */
     const val DEFAULT_DECIMAL_PLACES = 2
     
     /**
-     * BTC小数位数
+     * BTC decimal places
      */
     const val BTC_DECIMAL_PLACES = 8
     
     /**
-     * ETH小数位数
+     * ETH decimal places
      */
     const val ETH_DECIMAL_PLACES = 6
     
     /**
-     * CRO小数位数
+     * CRO decimal places
      */
     const val CRO_DECIMAL_PLACES = 2
     
     /**
-     * 获取货币的小数位数
+     * Get decimal places for currency
      */
     fun getDecimalPlaces(currency: String): Int {
         return when (currency) {
@@ -47,7 +47,7 @@ object WalletConstants {
     }
     
     /**
-     * 检查是否为支持的货币
+     * Check if currency is supported
      */
     fun isSupportedCurrency(currency: String): Boolean {
         return currency in SUPPORTED_CURRENCIES
