@@ -17,17 +17,18 @@ class WalletRepository(
     
     /**
      * 获取货币列表
+     * 货币列表相对静态，只需要请求一次
      */
-    fun getCurrencies(): Flow<Result<List<Currency>>> = flow {
-        try {
+    suspend fun getCurrencies(): Result<List<Currency>> {
+        return try {
             val response = walletApi.getCurrencies()
             if (response.ok) {
-                emit(Result.success(response.currencies))
+                Result.success(response.currencies)
             } else {
-                emit(Result.failure(Exception("获取货币列表失败")))
+                Result.failure(Exception("获取货币列表失败"))
             }
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Result.failure(e)
         }
     }
     
