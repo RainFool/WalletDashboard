@@ -1,56 +1,70 @@
 # WalletDashboard
 
-一个基于Android Jetpack Compose的钱包仪表板应用。
+A modern Android wallet dashboard application built with traditional Android Views and Material Design.
 
-## 项目配置
+## Features
 
-### 编译环境
-- **Java版本**: Java 8 (1.8)
-- **Android Gradle Plugin**: 7.4.2
-- **Kotlin版本**: 1.8.10
-- **Compose编译器版本**: 1.4.3
+- **Modern UI**: Built with Material Design components for a native Android experience
+- **MVVM Architecture**: Clean separation of concerns with ViewModel pattern
+- **Reactive Programming**: State management with Kotlin coroutines
+- **Network Layer**: RESTful API integration with Retrofit
+- **Image Loading**: Efficient image loading with Glide
 
-### 主要依赖库
-- **Kotlin**: 1.8.10
+## Tech Stack
+
+- **Language**: Kotlin 1.8.10
+- **UI Framework**: Traditional Android Views with Material Design
+- **Architecture**: MVVM with ViewModel
+- **Minimum SDK**: API 21 (Android 5.0)
+- **Target SDK**: API 34 (Android 14)
+- **Java Version**: Java 11
+
+## Project Structure
+
+```
+app/src/main/java/com/rainfool/wallet/
+├── MainActivity.kt              # Main activity
+├── ui/
+│   ├── MainViewModel.kt         # Main view model
+│   └── WalletBalanceAdapter.kt  # RecyclerView adapter
+├── data/
+│   ├── model/                   # Data models
+│   ├── network/                 # API layer
+│   └── repository/              # Data repository
+└── di/
+    └── DependencyProvider.kt    # Dependency injection
+```
+
+## Getting Started
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd WalletDashboard
+   ```
+
+2. **Build and run**
+   ```bash
+   ./gradlew build
+   ./gradlew installDebug
+   ```
+
+## Dependencies
+
 - **AndroidX Core KTX**: 1.10.1
 - **AndroidX Lifecycle**: 2.5.1
-  - lifecycle-runtime-ktx
-  - lifecycle-viewmodel-ktx
-- **Jetpack Compose**: 2023.08.00 BOM
-  - compose-ui
-  - compose-material3
-  - compose-activity
+- **Material Design**: 1.9.0
+- **Retrofit**: 2.9.0 (Network requests)
+- **Coroutines**: 1.6.4 (Async programming)
+- **Glide**: 4.15.1 (Image loading)
+- **Gson**: 2.10.1 (JSON parsing)
 
-### 项目结构
-```
-app/
-├── src/main/java/com/rainfool/wallet/
-│   ├── MainActivity.kt          # 主Activity
-│   ├── ui/
-│   │   └── MainViewModel.kt     # 主ViewModel
-│   └── ui/theme/               # 主题相关文件
-└── build.gradle                # 应用模块配置
-```
+## Requirements
 
-### 构建配置
-项目已配置为使用Java 8编译，确保兼容性：
-- `compileOptions`: Java 1.8
-- `kotlinOptions`: JVM 1.8
-- 移除了不必要的依赖库，只保留核心的Kotlin和ViewModel库
+- Android Studio Arctic Fox or later
+- JDK 11 or higher
+- Android SDK API 21+
 
-### 运行项目
-```bash
-./gradlew build
-./gradlew installDebug
-```
+## License
 
-## 功能特性
-- 使用Jetpack Compose构建现代化UI
-- 采用MVVM架构模式
-- 使用ViewModel管理UI状态
-- 支持响应式编程
-
-## 注意事项
-- 项目使用Java 8编译，确保在Java 8+环境下运行
-- 某些Compose库的lint检查可能显示警告（因为库是用Java 17编译的），但不影响功能
-- 项目已优化为最小依赖配置，只包含必要的库 
+This project is licensed under the MIT License. 
