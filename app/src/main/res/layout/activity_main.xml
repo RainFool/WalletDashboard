@@ -4,31 +4,31 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/gradient_background"
     tools:context=".MainActivity">
 
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
         android:text="钱包仪表板"
+        android:textColor="#FFFFFF"
         android:textSize="24sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/cardWallet"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.cardview.widget.CardView
-        android:id="@+id/cardWallet"
+        android:id="@+id/cardTotalValue"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         android:layout_marginEnd="16dp"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="4dp"
-        app:layout_constraintBottom_toTopOf="@+id/progressBar"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvTitle">
@@ -36,30 +36,83 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/total_value_background"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="24dp">
 
             <TextView
-                android:id="@+id/tvMessage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="正在加载..."
+                android:text="总价值 (USD)"
                 android:textAlignment="center"
+                android:textColor="#FFFFFF"
                 android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tvTotalValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="$0.00"
+                android:textAlignment="center"
+                android:textColor="#FFFFFF"
+                android:textSize="32sp"
+                android:textStyle="bold" />
 
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>
 
+    <TextView
+        android:id="@+id/tvBalancesTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:text="我的资产"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cardTotalValue" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvBalances"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/progressBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvBalancesTitle" />
+
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginBottom="32dp"
+        android:indeterminateTint="#FFFFFF"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cardWallet" />
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/tvMessage"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="32dp"
+        android:text="正在加载..."
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout> 

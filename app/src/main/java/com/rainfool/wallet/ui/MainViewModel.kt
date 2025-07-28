@@ -2,6 +2,8 @@ package com.rainfool.wallet.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rainfool.wallet.data.model.WalletBalance
+import com.rainfool.wallet.data.model.ExchangeRate
 import com.rainfool.wallet.data.repository.WalletRepository
 import com.rainfool.wallet.di.DependencyProvider
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,10 +31,28 @@ class MainViewModel : ViewModel() {
                 repository.getWalletBalances().collect { result ->
                     result.fold(
                         onSuccess = { balances ->
-                            _uiState.value = _uiState.value.copy(
-                                isLoading = false,
-                                message = "钱包数据加载成功，共${balances.size}个账户"
-                            )
+                            // 加载汇率数据
+                            repository.getExchangeRates().collect { ratesResult ->
+                                ratesResult.fold(
+                                    onSuccess = { rates ->
+                                        val totalUsdValue = calculateTotalUsdValue(balances, rates)
+                                        _uiState.value = _uiState.value.copy(
+                                            isLoading = false,
+                                            walletBalances = balances,
+                                            exchangeRates = rates,
+                                            totalUsdValue = totalUsdValue,
+                                            message = "钱包数据加载成功，总价值: $${String.format("%.2f", totalUsdValue)}"
+                                        )
+                                    },
+                                    onFailure = { error ->
+                                        _uiState.value = _uiState.value.copy(
+                                            isLoading = false,
+                                            walletBalances = balances,
+                                            message = "汇率数据加载失败: ${error.message}"
+                                        )
+                                    }
+                                )
+                            }
                         },
                         onFailure = { error ->
                             _uiState.value = _uiState.value.copy(
@@ -51,6 +71,21 @@ class MainViewModel : ViewModel() {
         }
     }
     
+    private fun calculateTotalUsdValue(balances: List<WalletBalance>, rates: List<ExchangeRate>): Double {
+        var totalUsdValue = 0.0
+        
+        balances.forEach { balance ->
+            val rate = rates.find { it.fromCurrency == balance.currency && it.toCurrency == "USD" }
+            if (rate != null && rate.rates.isNotEmpty()) {
+                val usdRate = rate.rates.first().rate.toDoubleOrNull() ?: 0.0
+                val usdValue = balance.amount * usdRate
+                totalUsdValue += usdValue
+            }
+        }
+        
+        return totalUsdValue
+    }
+    
     fun updateMessage(newMessage: String) {
         _uiState.value = _uiState.value.copy(message = newMessage)
     }
@@ -58,5 +93,8 @@ class MainViewModel : ViewModel() {
 
 data class MainUiState(
     val isLoading: Boolean = true,
-    val message: String = ""
+    val message: String = "",
+    val walletBalances: List<WalletBalance> = emptyList(),
+    val exchangeRates: List<ExchangeRate> = emptyList(),
+    val totalUsdValue: Double = 0.0
 ) 
