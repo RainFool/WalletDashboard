@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 
 class MainViewModel : ViewModel() {
     
@@ -20,6 +22,7 @@ class MainViewModel : ViewModel() {
     
     init {
         loadInitialData()
+        startLiveRateUpdates()
     }
     
     private fun loadInitialData() {
@@ -67,6 +70,46 @@ class MainViewModel : ViewModel() {
                     isLoading = false,
                     message = "初始化失败: ${e.message}"
                 )
+            }
+        }
+    }
+    
+    /**
+     * 开始定时更新汇率
+     */
+    private fun startLiveRateUpdates() {
+        viewModelScope.launch {
+            while (isActive) {
+                try {
+                    delay(1000) // 每秒更新一次
+                    
+                    // 获取最新的汇率数据
+                    repository.getExchangeRates().collect { result ->
+                        result.fold(
+                            onSuccess = { rates ->
+                                val currentState = _uiState.value
+                                val totalUsdValue = calculateTotalUsdValue(currentState.walletBalances, rates)
+                                
+                                _uiState.value = currentState.copy(
+                                    exchangeRates = rates,
+                                    totalUsdValue = totalUsdValue,
+                                    message = "汇率已更新，总价值: $${String.format("%.2f", totalUsdValue)}"
+                                )
+                            },
+                            onFailure = { error ->
+                                val currentState = _uiState.value
+                                _uiState.value = currentState.copy(
+                                    message = "汇率更新失败: ${error.message}"
+                                )
+                            }
+                        )
+                    }
+                } catch (e: Exception) {
+                    val currentState = _uiState.value
+                    _uiState.value = currentState.copy(
+                        message = "汇率更新异常: ${e.message}"
+                    )
+                }
             }
         }
     }

@@ -5,12 +5,26 @@ import com.rainfool.wallet.data.model.ExchangeRate
 import com.rainfool.wallet.data.model.Rate
 import com.rainfool.wallet.data.model.WalletBalance
 import kotlinx.coroutines.delay
+import kotlin.random.Random
 
 /**
  * 模拟钱包API实现
  * 延迟1秒后返回模拟数据，用于开发和测试
  */
 class MockWalletApi : WalletApi {
+    
+    // 基础汇率数据
+    private val baseRates = mapOf(
+        "BTC" to 45000.0,
+        "ETH" to 3200.0,
+        "CRO" to 0.08
+    )
+    
+    // 汇率变化范围（百分比）
+    private val rateChangeRange = 0.05 // 5%的变化范围
+    
+    // 失败概率（10%）
+    private val failureRate = 0.1
     
     override suspend fun getCurrencies(): CurrenciesResponse {
         delay(1000) // 模拟网络延迟1秒
@@ -98,6 +112,14 @@ class MockWalletApi : WalletApi {
     override suspend fun getLiveRates(): LiveRatesResponse {
         delay(1000) // 模拟网络延迟1秒
         
+        // 随机失败检查
+        if (Random.nextDouble() < failureRate) {
+            throw RuntimeException("网络请求失败，请稍后重试")
+        }
+        
+        // 生成随机变化的汇率
+        val currentTime = System.currentTimeMillis()
+        
         return LiveRatesResponse(
             ok = true,
             warning = "",
@@ -106,28 +128,54 @@ class MockWalletApi : WalletApi {
                     fromCurrency = "BTC",
                     toCurrency = "USD",
                     rates = listOf(
-                        Rate(amount = "1", rate = "45000.0")
+                        Rate(amount = "1", rate = generateRandomRate("BTC", currentTime))
                     ),
-                    timeStamp = System.currentTimeMillis()
+                    timeStamp = currentTime
                 ),
                 ExchangeRate(
                     fromCurrency = "ETH",
                     toCurrency = "USD",
                     rates = listOf(
-                        Rate(amount = "1", rate = "3200.0")
+                        Rate(amount = "1", rate = generateRandomRate("ETH", currentTime))
                     ),
-                    timeStamp = System.currentTimeMillis()
+                    timeStamp = currentTime
                 ),
                 ExchangeRate(
                     fromCurrency = "CRO",
                     toCurrency = "USD",
                     rates = listOf(
-                        Rate(amount = "1", rate = "0.08")
+                        Rate(amount = "1", rate = generateRandomRate("CRO", currentTime))
                     ),
-                    timeStamp = System.currentTimeMillis()
+                    timeStamp = currentTime
                 )
             )
         )
+    }
+    
+    /**
+     * 生成随机变化的汇率
+     * @param currency 货币代码
+     * @param timestamp 时间戳，用于确保每秒变化
+     * @return 格式化后的汇率字符串
+     */
+    private fun generateRandomRate(currency: String, timestamp: Long): String {
+        val baseRate = baseRates[currency] ?: return "0.0"
+        
+        // 使用时间戳确保每秒变化
+        val seed = timestamp / 1000 // 每秒一个种子
+        val random = Random(seed)
+        
+        // 生成-5%到+5%的随机变化
+        val changePercent = (random.nextDouble() - 0.5) * 2 * rateChangeRange
+        val newRate = baseRate * (1 + changePercent)
+        
+        // 根据货币类型格式化汇率
+        return when (currency) {
+            "BTC" -> "%.2f".format(newRate)
+            "ETH" -> "%.2f".format(newRate)
+            "CRO" -> "%.4f".format(newRate)
+            else -> "%.2f".format(newRate)
+        }
     }
     
     override suspend fun getWalletBalance(): WalletBalanceResponse {
