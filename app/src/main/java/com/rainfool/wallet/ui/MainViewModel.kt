@@ -10,129 +10,222 @@ import com.rainfool.wallet.di.DependencyProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.CancellationException
 
+/**
+ * MainViewModel manages the wallet dashboard UI state and data operations
+ * Handles currency loading, wallet balances, exchange rates, and total USD value calculation
+ */
 class MainViewModel : ViewModel() {
-    
+
+    // Repository for data operations
     private val repository: WalletRepository = DependencyProvider.provideWalletRepository()
-    
+
+    // UI state management
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
-    
+
+    // Data flow control
+    private var dataFlowJob: Job? = null
+    private var isDataFlowActive = false
+    private var isCurrencyLoaded = false
+
     init {
         loadInitialData()
-        startLiveRateUpdates()
+        startDataFlow()
     }
-    
-    private fun loadInitialData() {
-        viewModelScope.launch {
-            try {
-                _uiState.value = _uiState.value.copy(isLoading = true)
-                
-                // Load currency information
-                val currenciesResult = repository.getCurrencies()
-                currenciesResult.fold(
-                    onSuccess = { currencies ->
-                        // Load wallet data
-                        repository.getWalletBalances().collect { balancesResult ->
-                            balancesResult.fold(
-                                onSuccess = { balances ->
-                                    // Load exchange rate data
-                                    repository.getExchangeRates().collect { ratesResult ->
-                                        ratesResult.fold(
-                                            onSuccess = { rates ->
-                                                val totalUsdValue = calculateTotalUsdValue(balances, rates)
-                                                _uiState.value = _uiState.value.copy(
-                                                    isLoading = false,
-                                                    currencies = currencies,
-                                                    walletBalances = balances,
-                                                    exchangeRates = rates,
-                                                    totalUsdValue = totalUsdValue,
-                                                    message = "Wallet data loaded successfully, total value: $${String.format("%.2f", totalUsdValue)}"
-                                                )
-                                            },
-                                            onFailure = { error ->
-                                                _uiState.value = _uiState.value.copy(
-                                                    isLoading = false,
-                                                    currencies = currencies,
-                                                    walletBalances = balances,
-                                                    message = "Failed to load exchange rate data: ${error.message}"
-                                                )
-                                            }
-                                        )
-                                    }
-                                },
-                                onFailure = { error ->
-                                    _uiState.value = _uiState.value.copy(
-                                        isLoading = false,
-                                        currencies = currencies,
-                                        message = "Failed to load wallet data: ${error.message}"
-                                    )
-                                }
-                            )
-                        }
-                    },
-                    onFailure = { error ->
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            message = "Failed to load currency information: ${error.message}"
-                        )
-                    }
-                )
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    message = "Initialization failed: ${e.message}"
-                )
-            }
+
+    /**
+     * Start data flow when app becomes visible
+     */
+    fun onAppVisible() {
+        // Retry currency loading if it failed previously
+        if (!isCurrencyLoaded) {
+            loadInitialData()
+        }
+        
+        if (!isDataFlowActive) {
+            startDataFlow()
         }
     }
-    
+
     /**
-     * Start periodic exchange rate updates
+     * Stop data flow when app becomes invisible
      */
-    private fun startLiveRateUpdates() {
-        viewModelScope.launch {
-            while (isActive) {
-                try {
-                    delay(1000) // Update every second
-                    
-                    // Get latest exchange rate data
-                    repository.getExchangeRates().collect { result ->
-                        result.fold(
-                            onSuccess = { rates ->
-                                val currentState = _uiState.value
-                                val totalUsdValue = calculateTotalUsdValue(currentState.walletBalances, rates)
-                                
-                                _uiState.value = currentState.copy(
-                                    exchangeRates = rates,
-                                    totalUsdValue = totalUsdValue,
-                                    message = "Exchange rates updated, total value: $${String.format("%.2f", totalUsdValue)}"
-                                )
-                            },
-                            onFailure = { error ->
-                                val currentState = _uiState.value
-                                _uiState.value = currentState.copy(
-                                    message = "Failed to update exchange rates: ${error.message}"
-                                )
-                            }
-                        )
-                    }
-                } catch (e: Exception) {
+    fun onAppInvisible() {
+        stopDataFlow()
+    }
+
+    /**
+     * Stop the current data flow
+     */
+    private fun stopDataFlow() {
+        dataFlowJob?.cancel()
+        dataFlowJob = null
+        isDataFlowActive = false
+        _uiState.value = _uiState.value.copy(
+            message = "Data flow stopped"
+        )
+    }
+
+    /**
+     * Load initial currency data with error handling
+     */
+    private fun loadInitialData() = viewModelScope.launch {
+        try {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+
+            // Load currency information with retry mechanism
+            val currenciesResult = getCurrenciesWithRetry()
+            currenciesResult.fold(
+                onSuccess = { currencies ->
+                    _uiState.value = _uiState.value.copy(
+                        currencies = currencies,
+                        message = "Currency information loaded successfully"
+                    )
+                    isCurrencyLoaded = true
+                },
+                onFailure = { error ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        message = "Failed to load currency information after retries: ${error.message}"
+                    )
+                    isCurrencyLoaded = false
+                }
+            )
+
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                message = "Initialization failed: ${e.message}"
+            )
+            isCurrencyLoaded = false
+        }
+    }
+
+    /**
+     * Get currencies with retry mechanism
+     * Uses exponential backoff strategy with max 3 retries
+     */
+    private suspend fun getCurrenciesWithRetry(): Result<List<Currency>> {
+        val maxRetries = 3
+        var lastException: Exception? = null
+
+        for (attempt in 0..maxRetries) {
+            try {
+                val result = repository.getCurrencies()
+                if (result.isSuccess) {
+                    return result
+                } else {
+                    lastException = result.exceptionOrNull() as? Exception ?: Exception("Unknown error")
+                }
+            } catch (e: Exception) {
+                lastException = e
+            }
+
+            // If this is not the last attempt, wait before retrying
+            if (attempt < maxRetries) {
+                val delayMs = (1000L * (1 shl attempt)).coerceAtMost(5000L) // Exponential backoff, max 5 seconds
+                delay(delayMs)
+            }
+        }
+
+        return Result.failure(lastException ?: Exception("Failed after $maxRetries retries"))
+    }
+
+    /**
+     * Start continuous data flow monitoring
+     * Combines wallet balances and exchange rates for real-time updates
+     */
+    private fun startDataFlow() {
+        // Cancel existing data flow if any
+        dataFlowJob?.cancel()
+        
+        dataFlowJob = viewModelScope.launch {
+            try {
+                isDataFlowActive = true
+                _uiState.value = _uiState.value.copy(
+                    message = "Data flow started"
+                )
+                
+                // Combine wallet balances and exchange rates flows
+                combine(
+                    repository.getWalletBalances(),
+                    repository.getExchangeRates()
+                ) { balancesResult, ratesResult ->
+                    // Process wallet balances
+                    val balances = balancesResult.getOrNull() ?: emptyList()
+                    val balanceError = balancesResult.exceptionOrNull()
+
+                    // Process exchange rates
+                    val rates = ratesResult.getOrNull() ?: emptyList()
+                    val ratesError = ratesResult.exceptionOrNull()
+
+                    // Calculate total USD value
+                    val totalUsdValue = calculateTotalUsdValue(balances, rates)
+
+                    // Update UI state
                     val currentState = _uiState.value
                     _uiState.value = currentState.copy(
-                        message = "Exchange rate update exception: ${e.message}"
+                        isLoading = false,
+                        walletBalances = balances,
+                        exchangeRates = rates,
+                        totalUsdValue = totalUsdValue,
+                        message = when {
+                            balanceError != null -> "Failed to load wallet data: ${balanceError.message}"
+                            ratesError != null -> "Failed to load exchange rates: ${ratesError.message}"
+                            balances.isNotEmpty() && rates.isNotEmpty() ->
+                                "Data updated, total value: $${String.format("%.2f", totalUsdValue)}"
+
+                            else -> "Waiting for data..."
+                        }
+                    )
+                }.catch { error ->
+                    val currentState = _uiState.value
+                    _uiState.value = currentState.copy(
+                        isLoading = false,
+                        message = "Data flow error: ${error.message}"
+                    )
+                }.collect {
+                    // do nothing for now,just for starting the flow
+                }
+            } catch (e: Exception) {
+                // Handle cancellation and other exceptions
+                if (e is kotlinx.coroutines.CancellationException) {
+                    // Normal cancellation, don't update UI
+                    return@launch
+                }
+                
+                val currentState = _uiState.value
+                _uiState.value = currentState.copy(
+                    isLoading = false,
+                    message = "Data flow error: ${e.message}"
+                )
+            } finally {
+                // Ensure state is updated when flow is cancelled
+                if (!isDataFlowActive) {
+                    _uiState.value = _uiState.value.copy(
+                        message = "Data flow stopped"
                     )
                 }
             }
         }
     }
-    
+
+    /**
+     * Calculate total USD value by converting all wallet balances to USD
+     * @param balances List of wallet balances in different currencies
+     * @param rates List of exchange rates for currency conversion
+     * @return Total value in USD
+     */
     private fun calculateTotalUsdValue(balances: List<WalletBalance>, rates: List<ExchangeRate>): Double {
         var totalUsdValue = 0.0
-        
+
         balances.forEach { balance ->
             val rate = rates.find { it.fromCurrency == balance.currency && it.toCurrency == "USD" }
             if (rate != null && rate.rates.isNotEmpty()) {
@@ -141,15 +234,21 @@ class MainViewModel : ViewModel() {
                 totalUsdValue += usdValue
             }
         }
-        
+
         return totalUsdValue
     }
-    
-    fun updateMessage(newMessage: String) {
-        _uiState.value = _uiState.value.copy(message = newMessage)
+
+    override fun onCleared() {
+        super.onCleared()
+        stopDataFlow()
     }
+
 }
 
+/**
+ * UI state data class for the wallet dashboard
+ * Contains loading state, messages, currencies, balances, rates, and total USD value
+ */
 data class MainUiState(
     val isLoading: Boolean = true,
     val message: String = "",

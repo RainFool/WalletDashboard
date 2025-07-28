@@ -32,6 +32,18 @@ class MainActivity : AppCompatActivity() {
         observeViewModel()
     }
     
+    override fun onResume() {
+        super.onResume()
+        // Start data flow when app becomes visible
+        viewModel.onAppVisible()
+    }
+    
+    override fun onPause() {
+        super.onPause()
+        // Stop data flow when app becomes invisible
+        viewModel.onAppInvisible()
+    }
+    
     private fun initViews() {
         tvMessage = findViewById(R.id.tvMessage)
         tvTotalValue = findViewById(R.id.tvTotalValue)

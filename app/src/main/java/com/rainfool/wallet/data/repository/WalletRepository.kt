@@ -6,6 +6,7 @@ import com.rainfool.wallet.data.model.WalletBalance
 import com.rainfool.wallet.data.network.WalletApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.CancellationException
 
 /**
  * Wallet data repository
@@ -44,6 +45,9 @@ class WalletRepository(
                 emit(Result.failure(Exception("Failed to get exchange rates")))
             }
         } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) {
+                throw e // Re-throw cancellation exception
+            }
             emit(Result.failure(e))
         }
     }
@@ -60,6 +64,9 @@ class WalletRepository(
                 emit(Result.failure(Exception("Failed to get wallet balances")))
             }
         } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) {
+                throw e // Re-throw cancellation exception
+            }
             emit(Result.failure(e))
         }
     }
