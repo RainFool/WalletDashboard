@@ -1,16 +1,17 @@
-package com.rainfool.wallet.data.network
+package com.rainfool.wallet.data.repository
 
 import com.rainfool.wallet.data.model.Currency
 import com.rainfool.wallet.data.model.ExchangeRate
 import com.rainfool.wallet.data.model.WalletBalance
+import com.rainfool.wallet.data.network.WalletApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 /**
- * 网络服务类
- * 负责管理所有网络请求，使用模拟API实现
+ * 钱包数据仓库
+ * 负责管理所有数据操作，包括网络请求和本地缓存
  */
-class NetworkService(
+class WalletRepository(
     private val walletApi: WalletApi
 ) {
     
