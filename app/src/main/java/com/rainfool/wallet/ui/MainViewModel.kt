@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rainfool.wallet.data.model.WalletBalance
 import com.rainfool.wallet.data.model.ExchangeRate
+import com.rainfool.wallet.data.model.Currency
 import com.rainfool.wallet.data.repository.WalletRepository
 import com.rainfool.wallet.di.DependencyProvider
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,41 +31,56 @@ class MainViewModel : ViewModel() {
             try {
                 _uiState.value = _uiState.value.copy(isLoading = true)
                 
-                // 加载钱包数据
-                repository.getWalletBalances().collect { result ->
-                    result.fold(
-                        onSuccess = { balances ->
-                            // 加载汇率数据
-                            repository.getExchangeRates().collect { ratesResult ->
-                                ratesResult.fold(
-                                    onSuccess = { rates ->
-                                        val totalUsdValue = calculateTotalUsdValue(balances, rates)
-                                        _uiState.value = _uiState.value.copy(
-                                            isLoading = false,
-                                            walletBalances = balances,
-                                            exchangeRates = rates,
-                                            totalUsdValue = totalUsdValue,
-                                            message = "钱包数据加载成功，总价值: $${String.format("%.2f", totalUsdValue)}"
-                                        )
-                                    },
-                                    onFailure = { error ->
-                                        _uiState.value = _uiState.value.copy(
-                                            isLoading = false,
-                                            walletBalances = balances,
-                                            message = "汇率数据加载失败: ${error.message}"
+                // 加载货币信息
+                val currenciesResult = repository.getCurrencies()
+                currenciesResult.fold(
+                    onSuccess = { currencies ->
+                        // 加载钱包数据
+                        repository.getWalletBalances().collect { balancesResult ->
+                            balancesResult.fold(
+                                onSuccess = { balances ->
+                                    // 加载汇率数据
+                                    repository.getExchangeRates().collect { ratesResult ->
+                                        ratesResult.fold(
+                                            onSuccess = { rates ->
+                                                val totalUsdValue = calculateTotalUsdValue(balances, rates)
+                                                _uiState.value = _uiState.value.copy(
+                                                    isLoading = false,
+                                                    currencies = currencies,
+                                                    walletBalances = balances,
+                                                    exchangeRates = rates,
+                                                    totalUsdValue = totalUsdValue,
+                                                    message = "钱包数据加载成功，总价值: $${String.format("%.2f", totalUsdValue)}"
+                                                )
+                                            },
+                                            onFailure = { error ->
+                                                _uiState.value = _uiState.value.copy(
+                                                    isLoading = false,
+                                                    currencies = currencies,
+                                                    walletBalances = balances,
+                                                    message = "汇率数据加载失败: ${error.message}"
+                                                )
+                                            }
                                         )
                                     }
-                                )
-                            }
-                        },
-                        onFailure = { error ->
-                            _uiState.value = _uiState.value.copy(
-                                isLoading = false,
-                                message = "数据加载失败: ${error.message}"
+                                },
+                                onFailure = { error ->
+                                    _uiState.value = _uiState.value.copy(
+                                        isLoading = false,
+                                        currencies = currencies,
+                                        message = "钱包数据加载失败: ${error.message}"
+                                    )
+                                }
                             )
                         }
-                    )
-                }
+                    },
+                    onFailure = { error ->
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            message = "货币信息加载失败: ${error.message}"
+                        )
+                    }
+                )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
@@ -137,6 +153,7 @@ class MainViewModel : ViewModel() {
 data class MainUiState(
     val isLoading: Boolean = true,
     val message: String = "",
+    val currencies: List<Currency> = emptyList(),
     val walletBalances: List<WalletBalance> = emptyList(),
     val exchangeRates: List<ExchangeRate> = emptyList(),
     val totalUsdValue: Double = 0.0

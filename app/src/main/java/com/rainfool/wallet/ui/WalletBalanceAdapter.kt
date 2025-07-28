@@ -1,23 +1,29 @@
 package com.rainfool.wallet.ui
 
 import android.graphics.Color
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.rainfool.wallet.R
 import com.rainfool.wallet.data.model.WalletBalance
 import com.rainfool.wallet.data.model.ExchangeRate
+import com.rainfool.wallet.data.model.Currency
 
 class WalletBalanceAdapter : RecyclerView.Adapter<WalletBalanceAdapter.BalanceViewHolder>() {
     
     private var balances: List<WalletBalance> = emptyList()
     private var exchangeRates: List<ExchangeRate> = emptyList()
+    private var currencies: List<Currency> = emptyList()
     
-    fun updateData(newBalances: List<WalletBalance>, newRates: List<ExchangeRate>) {
+    fun updateData(newBalances: List<WalletBalance>, newRates: List<ExchangeRate>, newCurrencies: List<Currency>) {
         balances = newBalances
         exchangeRates = newRates
+        currencies = newCurrencies
         notifyDataSetChanged()
     }
     
@@ -37,30 +43,26 @@ class WalletBalanceAdapter : RecyclerView.Adapter<WalletBalanceAdapter.BalanceVi
         private val tvCurrency: TextView = itemView.findViewById(R.id.tvCurrency)
         private val tvAmount: TextView = itemView.findViewById(R.id.tvAmount)
         private val tvUsdValue: TextView = itemView.findViewById(R.id.tvUsdValue)
-        private val tvCurrencyIcon: TextView = itemView.findViewById(R.id.tvCurrencyIcon)
+        private val ivCurrencyIcon: ImageView = itemView.findViewById(R.id.ivCurrencyIcon)
         
         fun bind(balance: WalletBalance) {
             tvCurrency.text = balance.currency
             tvAmount.text = String.format("%.8f", balance.amount)
             
-            // 设置货币图标和颜色
-            when (balance.currency) {
-                "BTC" -> {
-                    tvCurrencyIcon.text = "₿"
-                    tvCurrencyIcon.setBackgroundColor(Color.parseColor("#F7931A"))
-                }
-                "ETH" -> {
-                    tvCurrencyIcon.text = "Ξ"
-                    tvCurrencyIcon.setBackgroundColor(Color.parseColor("#627EEA"))
-                }
-                "CRO" -> {
-                    tvCurrencyIcon.text = "C"
-                    tvCurrencyIcon.setBackgroundColor(Color.parseColor("#1E3A8A"))
-                }
-                else -> {
-                    tvCurrencyIcon.text = balance.currency.firstOrNull()?.toString() ?: "?"
-                    tvCurrencyIcon.setBackgroundColor(Color.parseColor("#666666"))
-                }
+            // 查找对应的货币信息
+            val currency = currencies.find { it.symbol == balance.currency }
+            Log.d("WalletBalanceAdapter", "colorfulImageUrl: ${currency?.colorfulImageUrl}")
+            // 加载货币图标
+            if (currency != null) {
+                // 使用彩色图片URL
+                Glide.with(itemView.context)
+                    .load(currency.colorfulImageUrl)
+                    .placeholder(R.drawable.currency_icon_background)
+                    .error(R.drawable.currency_icon_background)
+                    .into(ivCurrencyIcon)
+            } else {
+                // 如果没有找到货币信息，使用默认图标
+                ivCurrencyIcon.setImageResource(R.drawable.currency_icon_background)
             }
             
             // 计算USD价值

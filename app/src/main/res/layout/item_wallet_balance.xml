@@ -20,16 +20,13 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/tvCurrencyIcon"
+            <ImageView
+                android:id="@+id/ivCurrencyIcon"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:background="@drawable/currency_icon_background"
-                android:gravity="center"
-                android:text="₿"
-                android:textColor="#FFFFFF"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:scaleType="centerCrop"
+                android:contentDescription="货币图标" />
 
             <LinearLayout
                 android:layout_width="0dp"

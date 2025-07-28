@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
             tvTotalValue.text = "$${String.format("%.2f", uiState.totalUsdValue)}"
             
             // 更新余额列表
-            balanceAdapter.updateData(uiState.walletBalances, uiState.exchangeRates)
+            balanceAdapter.updateData(uiState.walletBalances, uiState.exchangeRates, uiState.currencies)
             
             // 更新消息
             tvMessage.text = uiState.message
