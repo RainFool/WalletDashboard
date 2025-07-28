@@ -13,6 +13,7 @@ import com.rainfool.wallet.R
 import com.rainfool.wallet.data.model.WalletBalance
 import com.rainfool.wallet.data.model.ExchangeRate
 import com.rainfool.wallet.data.model.Currency
+import com.rainfool.wallet.data.model.WalletConstants
 
 class WalletBalanceAdapter : RecyclerView.Adapter<WalletBalanceAdapter.BalanceViewHolder>() {
     
@@ -47,7 +48,9 @@ class WalletBalanceAdapter : RecyclerView.Adapter<WalletBalanceAdapter.BalanceVi
         
         fun bind(balance: WalletBalance) {
             tvCurrency.text = balance.currency
-            tvAmount.text = String.format("%.8f", balance.amount)
+            // 使用Constants中定义的小数位数显示金额
+            val decimalPlaces = WalletConstants.getDecimalPlaces(balance.currency)
+            tvAmount.text = String.format("%.${decimalPlaces}f %s", balance.amount, balance.currency)
             
             // 查找对应的货币信息
             val currency = currencies.find { it.symbol == balance.currency }
